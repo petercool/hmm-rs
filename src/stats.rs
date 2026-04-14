@@ -161,7 +161,20 @@ fn log_mvn_density_full(x: &Array2<f64>, means: &Array2<f64>, covars: &Array3<f6
                 for i in 0..nf {
                     cv_reg[[i, i]] += min_covar;
                 }
-                cholesky_lower(&cv_reg).expect("covars must be symmetric, positive-definite")
+                match cholesky_lower(&cv_reg) {
+                    Some(l) => l,
+                    None => {
+                        // Component has non-PD covariance; assign -inf log-likelihood
+                        log::warn!(
+                            "Component {c} has non-positive-definite covariance; \
+                             assigning -inf log-likelihood"
+                        );
+                        for s in 0..ns {
+                            result[[s, c]] = f64::NEG_INFINITY;
+                        }
+                        continue;
+                    }
+                }
             }
         };
 

@@ -97,27 +97,22 @@ fn log_partition_wishart(dof: f64, scale: &Array2<f64>) -> f64 {
         + gammaln_sum
 }
 
-/// Compute log determinant of a matrix via Cholesky.
+/// Compute log determinant of a positive-definite matrix via Cholesky.
+/// If Cholesky fails, adds jitter to the diagonal and retries.
 pub fn logdet(a: &Array2<f64>) -> f64 {
     let n = a.nrows();
-    match cholesky_lower(a) {
-        Some(l) => {
-            let mut ld = 0.0;
-            for i in 0..n {
-                ld += l[[i, i]].ln();
-            }
-            2.0 * ld
+    let l = cholesky_lower(a).unwrap_or_else(|| {
+        let mut a_reg = a.clone();
+        for i in 0..n {
+            a_reg[[i, i]] += 1e-10;
         }
-        None => {
-            // Fall back to LU-like computation
-            // For now, use the product of diagonal if symmetric
-            let mut prod = 0.0;
-            for i in 0..n {
-                prod += a[[i, i]].ln();
-            }
-            prod // approximate
-        }
+        cholesky_lower(&a_reg).expect("logdet: matrix not positive definite even with jitter")
+    });
+    let mut ld = 0.0;
+    for i in 0..n {
+        ld += l[[i, i]].ln();
     }
+    2.0 * ld
 }
 
 /// Simple matrix inverse for small matrices using Cholesky.

@@ -103,6 +103,10 @@ impl EmissionModel for PoissonEmissions {
                 let mut log_prob = 0.0;
                 for f in 0..nf {
                     let k = x[[s, f]];
+                    debug_assert!(
+                        k >= 0.0 && k.fract() == 0.0,
+                        "Poisson observations must be non-negative integers, got {k}"
+                    );
                     let lam = lambdas[[c, f]];
                     // Poisson log PMF: k * ln(lam) - lam - ln(k!)
                     log_prob += k * lam.ln() - lam - ln_factorial(k as u64);
@@ -120,7 +124,8 @@ impl EmissionModel for PoissonEmissions {
         let mut sample = Array1::<f64>::zeros(nf);
         for f in 0..nf {
             let pois = Poisson::new(lambdas[[state, f]]).unwrap();
-            sample[f] = rng.sample::<f64, _>(&pois);
+            let count: f64 = rng.sample(pois);
+            sample[f] = count.round(); // ensure integer value
         }
         sample
     }

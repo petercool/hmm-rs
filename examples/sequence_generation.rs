@@ -141,11 +141,12 @@ fn demo_poisson_hmm() {
     let mut data = Array2::<f64>::zeros((n, 1));
     let mut state = 0;
     for t in 0..n {
-        data[[t, 0]] = if state == 0 {
-            rand::Rng::sample::<f64, _>(&mut rng, &pois_low)
+        let count: f64 = if state == 0 {
+            rand::Rng::sample(&mut rng, &pois_low)
         } else {
-            rand::Rng::sample::<f64, _>(&mut rng, &pois_high)
+            rand::Rng::sample(&mut rng, &pois_high)
         };
+        data[[t, 0]] = count.round();
         // Transition
         let u: f64 = rand::Rng::random(&mut rng);
         if state == 0 && u < 0.05 {

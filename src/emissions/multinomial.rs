@@ -44,6 +44,8 @@ impl MultinomialEmissions {
 }
 
 /// Compute multinomial log PMF: log P(x | n, p)
+///
+/// Uses xlogy semantics: 0 * ln(0) = 0, k * ln(0) = -inf for k > 0.
 fn multinomial_logpmf(x: &[f64], p: &[f64]) -> f64 {
     let n: f64 = x.iter().sum();
     let n_u = n as u64;
@@ -51,7 +53,15 @@ fn multinomial_logpmf(x: &[f64], p: &[f64]) -> f64 {
     for i in 0..x.len() {
         let k = x[i];
         let k_u = k as u64;
-        log_prob += k * p[i].ln() - ln_factorial(k_u);
+        // xlogy: 0 * ln(0) = 0, avoids NaN from 0.0 * (-inf)
+        let term = if k == 0.0 {
+            0.0
+        } else if p[i] <= 0.0 {
+            f64::NEG_INFINITY
+        } else {
+            k * p[i].ln()
+        };
+        log_prob += term - ln_factorial(k_u);
     }
     log_prob
 }

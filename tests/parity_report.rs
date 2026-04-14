@@ -1,5 +1,5 @@
 //! Detailed parity report: print exact Rust vs Python values for all models.
-//! Run with: cargo test --release --test parity_report -- --nocapture
+//! Run with: cargo test --release --test parity_report -- --nocapture --ignored
 
 use hmm_rs::prelude::*;
 use ndarray::{Array1, Array2, Array3, Axis};
@@ -36,6 +36,7 @@ fn max_abs_diff(a: &Array2<f64>, b: &Array2<f64>) -> f64 {
 }
 
 #[test]
+#[ignore] // verbose report; use parity_tests.rs for CI
 fn full_parity_report() {
     println!("\n========================================================================");
     println!("           hmm-rs vs hmmlearn Numerical Parity Report");

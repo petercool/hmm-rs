@@ -1,11 +1,12 @@
 //! Quick performance comparison numbers.
-//! Run with: cargo test --release --test quick_bench -- --nocapture
+//! Run with: cargo test --release --test quick_bench -- --nocapture --ignored
 
 use hmm_rs::prelude::*;
 use ndarray::Array2;
 use std::time::Instant;
 
 #[test]
+#[ignore] // slow: runs full model fits with up to 100 EM iterations
 fn performance_report() {
     let configs = [
         (100, 2, 2, 10),
