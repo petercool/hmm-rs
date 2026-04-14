@@ -1,0 +1,44 @@
+[package]
+name = "hmm-rs"
+version = "0.1.0"
+edition = "2024"
+description = "A Rust implementation of Hidden Markov Models, port of Python hmmlearn"
+license = "MIT"
+repository = "https://github.com/petercool/hmm-rs"
+keywords = ["hmm", "hidden-markov-model", "machine-learning", "statistics", "baum-welch"]
+categories = ["science", "mathematics"]
+
+[dependencies]
+ndarray = { version = "0.16", features = ["serde"] }
+rand = "0.9"
+rand_distr = "0.5"
+statrs = "0.18"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+num-traits = "0.2"
+thiserror = "2.0"
+log = "0.4"
+
+[dev-dependencies]
+approx = "0.5"
+criterion = { version = "0.5", features = ["html_reports"] }
+plotly = "0.12"
+
+[[bench]]
+name = "hmm_bench"
+harness = false
+
+[[example]]
+name = "stock_regime_detection"
+
+[[example]]
+name = "weather_hmm"
+
+[[example]]
+name = "gaussian_clustering"
+
+[[example]]
+name = "model_selection"
+
+[[example]]
+name = "sequence_generation"
