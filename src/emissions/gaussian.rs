@@ -81,7 +81,7 @@ impl GaussianEmissions {
     }
 
     /// Get the CovarsArg for stats computation.
-    fn covars_arg(&self) -> CovarsArg {
+    fn covars_arg(&self) -> CovarsArg<'_> {
         match self.covariance_type {
             CovarianceType::Full => CovarsArg::Full(self.covars_full_.as_ref().unwrap()),
             CovarianceType::Tied => CovarsArg::Tied(self.covars_tied_.as_ref().unwrap()),
@@ -95,7 +95,7 @@ impl GaussianEmissions {
     /// Get the internal covariance used for log-likelihood (native shape).
     /// For GaussianHMM, _covars_ is the native shape used in compute_log_likelihood.
     /// covars_ property returns full matrices (like hmmlearn's fill_covars).
-    fn get_covars_for_log_likelihood(&self) -> CovarsArg {
+    fn get_covars_for_log_likelihood(&self) -> CovarsArg<'_> {
         self.covars_arg()
     }
 
@@ -283,10 +283,7 @@ impl EmissionModel for GaussianEmissions {
         let nf = self.n_features.unwrap();
         let mut stats = SufficientStatistics::new();
         stats.insert("post".to_string(), ArrayD::zeros(IxDyn(&[n_components])));
-        stats.insert(
-            "obs".to_string(),
-            ArrayD::zeros(IxDyn(&[n_components, nf])),
-        );
+        stats.insert("obs".to_string(), ArrayD::zeros(IxDyn(&[n_components, nf])));
         stats.insert(
             "obs**2".to_string(),
             ArrayD::zeros(IxDyn(&[n_components, nf])),
@@ -409,8 +406,7 @@ impl EmissionModel for GaussianEmissions {
 
                         for f in 0..nf {
                             let meandiff = means[[c, f]] - means_prior;
-                            let c_n = means_weight * meandiff * meandiff
-                                + obs2[IxDyn(&[c, f])]
+                            let c_n = means_weight * meandiff * meandiff + obs2[IxDyn(&[c, f])]
                                 - 2.0 * means[[c, f]] * obs[IxDyn(&[c, f])]
                                 + means[[c, f]] * means[[c, f]] * denom;
                             covars[[c, f]] = (covars_prior + c_n) / c_d.max(1e-5);
@@ -474,8 +470,7 @@ impl EmissionModel for GaussianEmissions {
                             let denom = cvweight + post[IxDyn(&[c])];
                             for k in 0..nf {
                                 for l in 0..nf {
-                                    full[[c, k, l]] =
-                                        (covars_prior + c_n[[c, k, l]]) / denom;
+                                    full[[c, k, l]] = (covars_prior + c_n[[c, k, l]]) / denom;
                                 }
                             }
                         }
@@ -667,10 +662,10 @@ mod tests {
         let mut model = GaussianHmm::gaussian(2, CovarianceType::Full);
         model.emission.n_features = Some(2);
         model.emission.means_ = Some(array![[0.0, 0.0], [5.0, 5.0]]);
-        model.emission.covars_full_ = Some(Array3::from_shape_vec(
-            (2, 2, 2),
-            vec![1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0],
-        ).unwrap());
+        model.emission.covars_full_ = Some(
+            Array3::from_shape_vec((2, 2, 2), vec![1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0])
+                .unwrap(),
+        );
         model.startprob_ = array![0.5, 0.5];
         model.transmat_ = array![[0.8, 0.2], [0.2, 0.8]];
         model.fitted = true;

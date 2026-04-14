@@ -1,9 +1,13 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use hmm_rs::algorithms;
 use hmm_rs::prelude::*;
 use ndarray::{Array1, Array2};
 
-fn generate_gaussian_data(n_samples: usize, n_features: usize, _n_components: usize) -> Array2<f64> {
+fn generate_gaussian_data(
+    n_samples: usize,
+    n_features: usize,
+    _n_components: usize,
+) -> Array2<f64> {
     let mut rng = rand::rng();
     let normal = rand_distr::Normal::new(0.0, 1.0).unwrap();
     Array2::from_shape_fn((n_samples, n_features), |_| {
@@ -17,10 +21,8 @@ fn bench_forward_log(c: &mut Criterion) {
     for &n_samples in &[100, 500, 1000, 5000] {
         for &n_components in &[2, 5, 10] {
             let startprob = Array1::from_elem(n_components, 1.0 / n_components as f64);
-            let transmat = Array2::from_elem(
-                (n_components, n_components),
-                1.0 / n_components as f64,
-            );
+            let transmat =
+                Array2::from_elem((n_components, n_components), 1.0 / n_components as f64);
             let log_frameprob = Array2::from_elem((n_samples, n_components), -2.0);
 
             group.bench_with_input(
@@ -47,10 +49,8 @@ fn bench_viterbi(c: &mut Criterion) {
     for &n_samples in &[100, 500, 1000] {
         for &n_components in &[2, 5, 10] {
             let startprob = Array1::from_elem(n_components, 1.0 / n_components as f64);
-            let transmat = Array2::from_elem(
-                (n_components, n_components),
-                1.0 / n_components as f64,
-            );
+            let transmat =
+                Array2::from_elem((n_components, n_components), 1.0 / n_components as f64);
             let log_frameprob = Array2::from_elem((n_samples, n_components), -2.0);
 
             group.bench_with_input(
@@ -75,11 +75,7 @@ fn bench_gaussian_fit(c: &mut Criterion) {
     let mut group = c.benchmark_group("gaussian_fit");
     group.sample_size(10);
 
-    for &(n_samples, n_features, n_components) in &[
-        (100, 2, 2),
-        (500, 5, 3),
-        (1000, 10, 5),
-    ] {
+    for &(n_samples, n_features, n_components) in &[(100, 2, 2), (500, 5, 3), (1000, 10, 5)] {
         let data = generate_gaussian_data(n_samples, n_features, n_components);
         let lengths = [n_samples];
 
@@ -147,9 +143,7 @@ fn bench_score(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::from_parameter(n_samples),
             &n_samples,
-            |b, _| {
-                b.iter(|| model.score(black_box(&data), black_box(&lengths)).unwrap())
-            },
+            |b, _| b.iter(|| model.score(black_box(&data), black_box(&lengths)).unwrap()),
         );
     }
     group.finish();

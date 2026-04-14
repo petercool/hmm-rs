@@ -62,10 +62,7 @@ fn performance_report() {
         }
         times.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let median = times[10];
-        println!(
-            "  {:>5} samples, nc=3, nf=5:     {:>8.4} ms",
-            n_s, median
-        );
+        println!("  {:>5} samples, nc=3, nf=5:     {:>8.4} ms", n_s, median);
     }
 
     println!("\nCategoricalHMM.fit():");
@@ -86,9 +83,6 @@ fn performance_report() {
         }
         times.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let median = times[2];
-        println!(
-            "  {:>5} samples, nc=3, nf=5:     {:>8.2} ms",
-            n_s, median
-        );
+        println!("  {:>5} samples, nc=3, nf=5:     {:>8.2} ms", n_s, median);
     }
 }

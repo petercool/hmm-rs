@@ -41,25 +41,20 @@ impl ConvergenceMonitor {
             } else {
                 f64::NAN
             };
-            eprintln!(
-                "{:>10} {:>16.8} {:>+16.8}",
-                self.iter + 1,
-                log_prob,
-                delta
-            );
+            eprintln!("{:>10} {:>16.8} {:>+16.8}", self.iter + 1, log_prob, delta);
         }
 
         // Warn if not converging (matching hmmlearn's precision check).
         let precision = f64::EPSILON.sqrt();
-        if let Some(&last) = self.history.back() {
-            if (log_prob - last) < -precision {
-                log::warn!(
-                    "Model is not converging. Current: {} is not greater than {}. Delta is {}",
-                    log_prob,
-                    last,
-                    log_prob - last
-                );
-            }
+        if let Some(&last) = self.history.back()
+            && (log_prob - last) < -precision
+        {
+            log::warn!(
+                "Model is not converging. Current: {} is not greater than {}. Delta is {}",
+                log_prob,
+                last,
+                log_prob - last
+            );
         }
 
         self.history.push_back(log_prob);

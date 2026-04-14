@@ -6,7 +6,7 @@ use ndarray::{Array1, Array2, ArrayD, IxDyn};
 use rand::Rng;
 use statrs::function::gamma::digamma;
 
-use crate::base::{sample_dirichlet, EmissionModel, ParamFlags, SufficientStatistics};
+use crate::base::{EmissionModel, ParamFlags, SufficientStatistics, sample_dirichlet};
 use crate::error::Result;
 use crate::kl_divergence;
 use crate::utils;
@@ -174,10 +174,7 @@ impl VariationalEmissionModel for VariationalCategoricalEmissions {
         let nc = prior.nrows();
         let mut kl = 0.0;
         for c in 0..nc {
-            kl += kl_divergence::kl_dirichlet(
-                &post.row(c).to_owned(),
-                &prior.row(c).to_owned(),
-            );
+            kl += kl_divergence::kl_dirichlet(&post.row(c).to_owned(), &prior.row(c).to_owned());
         }
         kl
     }
@@ -250,8 +247,16 @@ mod tests {
         model.emission.n_features = Some(3);
 
         let x = array![
-            [0.0], [1.0], [2.0], [0.0], [1.0],
-            [0.0], [0.0], [1.0], [2.0], [2.0]
+            [0.0],
+            [1.0],
+            [2.0],
+            [0.0],
+            [1.0],
+            [0.0],
+            [0.0],
+            [1.0],
+            [2.0],
+            [2.0]
         ];
         let lengths = [10];
 
@@ -274,9 +279,21 @@ mod tests {
         model.emission.n_features = Some(3);
 
         let x = array![
-            [0.0], [1.0], [2.0], [0.0], [1.0],
-            [0.0], [0.0], [1.0], [2.0], [2.0],
-            [1.0], [0.0], [2.0], [1.0], [0.0],
+            [0.0],
+            [1.0],
+            [2.0],
+            [0.0],
+            [1.0],
+            [0.0],
+            [0.0],
+            [1.0],
+            [2.0],
+            [2.0],
+            [1.0],
+            [0.0],
+            [2.0],
+            [1.0],
+            [0.0],
         ];
         let lengths = [15];
 

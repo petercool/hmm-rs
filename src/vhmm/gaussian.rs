@@ -58,7 +58,6 @@ impl VariationalGaussianEmissions {
             covars_: None,
         }
     }
-
 }
 
 impl EmissionModel for VariationalGaussianEmissions {
@@ -116,10 +115,7 @@ impl EmissionModel for VariationalGaussianEmissions {
         let nf = self.n_features.unwrap();
         let mut stats = SufficientStatistics::new();
         stats.insert("post".to_string(), ArrayD::zeros(IxDyn(&[n_components])));
-        stats.insert(
-            "obs".to_string(),
-            ArrayD::zeros(IxDyn(&[n_components, nf])),
-        );
+        stats.insert("obs".to_string(), ArrayD::zeros(IxDyn(&[n_components, nf])));
         stats.insert(
             "obs**2".to_string(),
             ArrayD::zeros(IxDyn(&[n_components, nf])),
@@ -163,7 +159,9 @@ impl EmissionModel for VariationalGaussianEmissions {
             let obs2 = stats.get_mut("obs**2").unwrap();
             for c in 0..nc {
                 for f in 0..nf {
-                    let s: f64 = (0..ns).map(|s| posteriors[[s, c]] * x[[s, f]] * x[[s, f]]).sum();
+                    let s: f64 = (0..ns)
+                        .map(|s| posteriors[[s, c]] * x[[s, f]] * x[[s, f]])
+                        .sum();
                     obs2[IxDyn(&[c, f])] += s;
                 }
             }
@@ -173,8 +171,9 @@ impl EmissionModel for VariationalGaussianEmissions {
             for c in 0..nc {
                 for k in 0..nf {
                     for l in 0..nf {
-                        let s: f64 =
-                            (0..ns).map(|s| posteriors[[s, c]] * x[[s, k]] * x[[s, l]]).sum();
+                        let s: f64 = (0..ns)
+                            .map(|s| posteriors[[s, c]] * x[[s, k]] * x[[s, l]])
+                            .sum();
                         obs_obt[IxDyn(&[c, k, l])] += s;
                     }
                 }
@@ -397,8 +396,7 @@ impl VariationalEmissionModel for VariationalGaussianEmissions {
                         }
                         CovarianceType::Spherical => {
                             if i == j {
-                                let mean_var =
-                                    (0..nf).map(|k| cv[[k, k]]).sum::<f64>() / nf as f64;
+                                let mean_var = (0..nf).map(|k| cv[[k, k]]).sum::<f64>() / nf as f64;
                                 scale_post[[c, i, j]] = mean_var * dof_post[c];
                             }
                         }
@@ -462,9 +460,7 @@ impl VariationalEmissionModel for VariationalGaussianEmissions {
                             for l in 0..nf {
                                 scale_post[[c, k, l]] = scale_prior[[c, k, l]]
                                     + obs_obt[IxDyn(&[c, k, l])]
-                                    + beta_prior[c]
-                                        * means_prior[[c, k]]
-                                        * means_prior[[c, l]]
+                                    + beta_prior[c] * means_prior[[c, k]] * means_prior[[c, l]]
                                     - beta_post[c] * means_post[[c, k]] * means_post[[c, l]];
                             }
                         }
@@ -487,9 +483,7 @@ impl VariationalEmissionModel for VariationalGaussianEmissions {
                         for k in 0..nf {
                             for l in 0..nf {
                                 scale_sum[[k, l]] += obs_obt[IxDyn(&[c, k, l])]
-                                    + beta_prior[c]
-                                        * means_prior[[c, k]]
-                                        * means_prior[[c, l]]
+                                    + beta_prior[c] * means_prior[[c, k]] * means_prior[[c, l]]
                                     - beta_post[c] * means_post[[c, k]] * means_post[[c, l]];
                             }
                         }
@@ -497,8 +491,7 @@ impl VariationalEmissionModel for VariationalGaussianEmissions {
                     for c in 0..nc {
                         for k in 0..nf {
                             for l in 0..nf {
-                                scale_post[[c, k, l]] =
-                                    scale_prior[[c, k, l]] + scale_sum[[k, l]];
+                                scale_post[[c, k, l]] = scale_prior[[c, k, l]] + scale_sum[[k, l]];
                                 covars[[c, k, l]] = scale_post[[c, k, l]] / total_dof;
                             }
                         }
@@ -511,9 +504,7 @@ impl VariationalEmissionModel for VariationalGaussianEmissions {
                         for f in 0..nf {
                             let s = scale_prior[[c, f, f]]
                                 + obs2[IxDyn(&[c, f])]
-                                + beta_prior[c]
-                                    * means_prior[[c, f]]
-                                    * means_prior[[c, f]]
+                                + beta_prior[c] * means_prior[[c, f]] * means_prior[[c, f]]
                                 - beta_post[c] * means_post[[c, f]] * means_post[[c, f]];
                             scale_post[[c, f, f]] = s;
                             covars[[c, f, f]] = s / dof_post[c];
@@ -536,9 +527,7 @@ impl VariationalEmissionModel for VariationalGaussianEmissions {
                         for f in 0..nf {
                             mean_s += scale_prior[[c, f, f]]
                                 + obs2[IxDyn(&[c, f])]
-                                + beta_prior[c]
-                                    * means_prior[[c, f]]
-                                    * means_prior[[c, f]]
+                                + beta_prior[c] * means_prior[[c, f]] * means_prior[[c, f]]
                                 - beta_post[c] * means_post[[c, f]] * means_post[[c, f]];
                         }
                         mean_s /= nf as f64;
@@ -593,14 +582,10 @@ fn matrix_inverse_cholesky(a: &Array2<f64>) -> Array2<f64> {
     inv
 }
 
-pub type VariationalGaussianHmm =
-    crate::vhmm::VariationalBaseHmm<VariationalGaussianEmissions>;
+pub type VariationalGaussianHmm = crate::vhmm::VariationalBaseHmm<VariationalGaussianEmissions>;
 
 impl VariationalGaussianHmm {
-    pub fn variational_gaussian(
-        n_components: usize,
-        covariance_type: CovarianceType,
-    ) -> Self {
+    pub fn variational_gaussian(n_components: usize, covariance_type: CovarianceType) -> Self {
         Self::new(
             n_components,
             VariationalGaussianEmissions::new(covariance_type),
@@ -632,10 +617,9 @@ mod tests {
     #[test]
     fn test_variational_gaussian_full() {
         let x = test_data();
-        let mut model =
-            VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Full)
-                .with_n_iter(30)
-                .with_tol(1e-6);
+        let mut model = VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Full)
+            .with_n_iter(30)
+            .with_tol(1e-6);
         model.fit(&x, &[x.nrows()]).unwrap();
         let score = model.score(&x, &[x.nrows()]).unwrap();
         assert!(score.is_finite(), "Full: score={}", score);
@@ -644,10 +628,9 @@ mod tests {
     #[test]
     fn test_variational_gaussian_diag() {
         let x = test_data();
-        let mut model =
-            VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Diag)
-                .with_n_iter(30)
-                .with_tol(1e-6);
+        let mut model = VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Diag)
+            .with_n_iter(30)
+            .with_tol(1e-6);
         model.fit(&x, &[x.nrows()]).unwrap();
         let score = model.score(&x, &[x.nrows()]).unwrap();
         assert!(score.is_finite(), "Diag: score={}", score);
@@ -656,10 +639,9 @@ mod tests {
     #[test]
     fn test_variational_gaussian_tied() {
         let x = test_data();
-        let mut model =
-            VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Tied)
-                .with_n_iter(30)
-                .with_tol(1e-6);
+        let mut model = VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Tied)
+            .with_n_iter(30)
+            .with_tol(1e-6);
         model.fit(&x, &[x.nrows()]).unwrap();
         let score = model.score(&x, &[x.nrows()]).unwrap();
         assert!(score.is_finite(), "Tied: score={}", score);
@@ -668,10 +650,9 @@ mod tests {
     #[test]
     fn test_variational_gaussian_spherical() {
         let x = test_data();
-        let mut model =
-            VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Spherical)
-                .with_n_iter(30)
-                .with_tol(1e-6);
+        let mut model = VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Spherical)
+            .with_n_iter(30)
+            .with_tol(1e-6);
         model.fit(&x, &[x.nrows()]).unwrap();
         let score = model.score(&x, &[x.nrows()]).unwrap();
         assert!(score.is_finite(), "Spherical: score={}", score);

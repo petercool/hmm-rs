@@ -6,7 +6,7 @@
 //! Run: `cargo run --example sequence_generation`
 
 use hmm_rs::prelude::*;
-use ndarray::{array, Array2, Array3};
+use ndarray::{Array2, Array3, array};
 use plotly::common::{Marker, Mode, Title};
 use plotly::layout::{Axis, Layout};
 use plotly::{Plot, Scatter};
@@ -32,25 +32,24 @@ fn demo_gaussian_hmm() {
     // Set up a 3-state model with distinct means
     model.emission.n_features = Some(2);
     model.emission.means_ = Some(array![
-        [0.0, 0.0],   // State 0: origin
-        [5.0, 0.0],   // State 1: right
-        [2.5, 4.0]    // State 2: top
+        [0.0, 0.0], // State 0: origin
+        [5.0, 0.0], // State 1: right
+        [2.5, 4.0]  // State 2: top
     ]);
-    model.emission.covars_full_ = Some(Array3::from_shape_vec(
-        (3, 2, 2),
-        vec![
-            0.5, 0.2, 0.2, 0.5,  // State 0: correlated
-            1.0, 0.0, 0.0, 0.3,  // State 1: elongated horizontal
-            0.3, 0.0, 0.0, 1.0,  // State 2: elongated vertical
-        ],
-    ).unwrap());
+    model.emission.covars_full_ = Some(
+        Array3::from_shape_vec(
+            (3, 2, 2),
+            vec![
+                0.5, 0.2, 0.2, 0.5, // State 0: correlated
+                1.0, 0.0, 0.0, 0.3, // State 1: elongated horizontal
+                0.3, 0.0, 0.0, 1.0, // State 2: elongated vertical
+            ],
+        )
+        .unwrap(),
+    );
 
     model.startprob_ = array![0.5, 0.3, 0.2];
-    model.transmat_ = array![
-        [0.7, 0.2, 0.1],
-        [0.1, 0.7, 0.2],
-        [0.2, 0.1, 0.7]
-    ];
+    model.transmat_ = array![[0.7, 0.2, 0.1], [0.1, 0.7, 0.2], [0.2, 0.1, 0.7]];
     model.fitted = true;
 
     // Generate multiple trajectories
@@ -122,15 +121,16 @@ fn demo_gaussian_hmm() {
 
     // Stationary distribution
     let pi = model.get_stationary_distribution().unwrap();
-    println!("  Stationary distribution: [{:.3}, {:.3}, {:.3}]", pi[0], pi[1], pi[2]);
+    println!(
+        "  Stationary distribution: [{:.3}, {:.3}, {:.3}]",
+        pi[0], pi[1], pi[2]
+    );
 }
 
 fn demo_poisson_hmm() {
     println!("\n--- Poisson HMM: Event Counts ---");
 
-    let mut model = PoissonHmm::poisson(2)
-        .with_n_iter(50)
-        .with_tol(1e-4);
+    let mut model = PoissonHmm::poisson(2).with_n_iter(50).with_tol(1e-4);
 
     // Generate training data: low-rate and high-rate states
     let mut rng = rand::rng();
@@ -158,7 +158,11 @@ fn demo_poisson_hmm() {
     model.fit(&data, &[n]).unwrap();
 
     let lambdas = model.emission.lambdas_.as_ref().unwrap();
-    println!("  Learned Poisson rates: [{:.2}, {:.2}]", lambdas[[0, 0]], lambdas[[1, 0]]);
+    println!(
+        "  Learned Poisson rates: [{:.2}, {:.2}]",
+        lambdas[[0, 0]],
+        lambdas[[1, 0]]
+    );
 
     let score = model.score(&data, &[n]).unwrap();
     println!("  Log-likelihood: {:.2}", score);
@@ -173,7 +177,18 @@ fn demo_serialization() {
         .with_tol(1e-4);
     model.emission.n_features = Some(3);
 
-    let data = array![[0.0], [1.0], [2.0], [0.0], [1.0], [2.0], [0.0], [0.0], [1.0], [2.0]];
+    let data = array![
+        [0.0],
+        [1.0],
+        [2.0],
+        [0.0],
+        [1.0],
+        [2.0],
+        [0.0],
+        [0.0],
+        [1.0],
+        [2.0]
+    ];
     model.fit(&data, &[10]).unwrap();
 
     let score_before = model.score(&data, &[10]).unwrap();

@@ -128,14 +128,8 @@ impl EmissionModel for PoissonEmissions {
     fn initialize_sufficient_statistics(&self, n_components: usize) -> SufficientStatistics {
         let nf = self.n_features.unwrap();
         let mut stats = SufficientStatistics::new();
-        stats.insert(
-            "post".to_string(),
-            ArrayD::zeros(IxDyn(&[n_components])),
-        );
-        stats.insert(
-            "obs".to_string(),
-            ArrayD::zeros(IxDyn(&[n_components, nf])),
-        );
+        stats.insert("post".to_string(), ArrayD::zeros(IxDyn(&[n_components])));
+        stats.insert("obs".to_string(), ArrayD::zeros(IxDyn(&[n_components, nf])));
         stats
     }
 
@@ -215,14 +209,20 @@ mod tests {
 
     #[test]
     fn test_poisson_fit_and_score() {
-        let mut model = PoissonHmm::poisson(2)
-            .with_n_iter(20)
-            .with_tol(1e-4);
+        let mut model = PoissonHmm::poisson(2).with_n_iter(20).with_tol(1e-4);
 
         // Generate Poisson-like data
         let x = array![
-            [1.0], [0.0], [2.0], [1.0], [3.0],
-            [5.0], [4.0], [6.0], [5.0], [7.0]
+            [1.0],
+            [0.0],
+            [2.0],
+            [1.0],
+            [3.0],
+            [5.0],
+            [4.0],
+            [6.0],
+            [5.0],
+            [7.0]
         ];
         let lengths = [10];
 

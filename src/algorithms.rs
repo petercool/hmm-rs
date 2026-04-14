@@ -118,8 +118,7 @@ pub fn backward_log(
     for t in (0..ns - 1).rev() {
         for i in 0..nc {
             for j in 0..nc {
-                buf[j] =
-                    log_transmat[[i, j]] + log_frameprob[[t + 1, j]] + bwdlattice[[t + 1, j]];
+                buf[j] = log_transmat[[i, j]] + log_frameprob[[t + 1, j]] + bwdlattice[[t + 1, j]];
             }
             bwdlattice[[t, i]] = logsumexp(&buf);
         }
@@ -485,9 +484,7 @@ mod tests {
 
         // Verify: sum(exp(fwd[t] + bwd[t])) should be approximately exp(log_prob) for each t
         for t in 0..3 {
-            let gamma_sum: f64 = (0..2)
-                .map(|i| (fwd[[t, i]] + bwd[[t, i]]).exp())
-                .sum();
+            let gamma_sum: f64 = (0..2).map(|i| (fwd[[t, i]] + bwd[[t, i]]).exp()).sum();
             let prob = log_prob.exp();
             assert!(
                 (gamma_sum - prob).abs() / prob < 1e-10,
@@ -511,8 +508,7 @@ mod tests {
         let frameprob = log_frameprob.mapv(f64::exp);
 
         let (log_prob_log, _) = forward_log(&startprob, &transmat, &log_frameprob);
-        let (log_prob_scaling, _, _) =
-            forward_scaling(&startprob, &transmat, &frameprob).unwrap();
+        let (log_prob_scaling, _, _) = forward_scaling(&startprob, &transmat, &frameprob).unwrap();
 
         assert!(
             (log_prob_log - log_prob_scaling).abs() < 1e-10,
@@ -598,8 +594,7 @@ mod tests {
         let xi_from_log = log_xi.mapv(f64::exp);
 
         // Scaling implementation
-        let (_, fwd_sc, scaling) =
-            forward_scaling(&startprob, &transmat, &frameprob).unwrap();
+        let (_, fwd_sc, scaling) = forward_scaling(&startprob, &transmat, &frameprob).unwrap();
         let bwd_sc = backward_scaling(&startprob, &transmat, &frameprob, &scaling);
         let xi_from_scaling = compute_scaling_xi_sum(&fwd_sc, &transmat, &bwd_sc, &frameprob);
 

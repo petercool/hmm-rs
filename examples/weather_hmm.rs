@@ -6,7 +6,7 @@
 //! Run: `cargo run --example weather_hmm`
 
 use hmm_rs::prelude::*;
-use ndarray::{array, Array1, Array2};
+use ndarray::{Array1, Array2, array};
 use plotly::common::{Mode, Title};
 use plotly::layout::{Axis, Layout};
 use plotly::{Plot, Scatter};
@@ -52,8 +52,7 @@ fn main() {
     }
 
     // Now decode (pretend we only see activities)
-    let (log_prob, decoded_states) =
-        model.decode(&observations, &[30], None).unwrap();
+    let (log_prob, decoded_states) = model.decode(&observations, &[30], None).unwrap();
 
     println!("\nDecoding results (log-prob: {:.4}):", log_prob);
     let mut correct = 0;
@@ -72,7 +71,12 @@ fn main() {
             match_str
         );
     }
-    println!("\nAccuracy: {}/{} ({:.1}%)", correct, 30, correct as f64 / 30.0 * 100.0);
+    println!(
+        "\nAccuracy: {}/{} ({:.1}%)",
+        correct,
+        30,
+        correct as f64 / 30.0 * 100.0
+    );
 
     // Get posterior probabilities
     let posteriors = model.predict_proba(&observations, &[30]).unwrap();
@@ -97,7 +101,10 @@ fn main() {
     for s in 0..2 {
         println!(
             "  State {}: Walk={:.3} Shop={:.3} Clean={:.3}",
-            s, learned_ep[[s, 0]], learned_ep[[s, 1]], learned_ep[[s, 2]]
+            s,
+            learned_ep[[s, 0]],
+            learned_ep[[s, 1]],
+            learned_ep[[s, 2]]
         );
     }
 
@@ -149,7 +156,9 @@ fn create_weather_plot(
     plot.add_trace(obs_trace);
 
     let layout = Layout::new()
-        .title(Title::with_text("Weather HMM: Hidden States and Observations"))
+        .title(Title::with_text(
+            "Weather HMM: Hidden States and Observations",
+        ))
         .x_axis(Axis::new().title(Title::with_text("Day")))
         .y_axis(Axis::new().title(Title::with_text("State (0=Sunny, 1=Rainy)")))
         .y_axis2(

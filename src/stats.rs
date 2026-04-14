@@ -70,11 +70,7 @@ impl<'a> CovarsArg<'a> {
 /// Diagonal covariance: covars shape (n_components, n_features).
 ///
 /// log p(x|c) = -0.5 * (nf * ln(2π) + sum(ln(covars_c)) + sum((x - μ_c)² / covars_c))
-fn log_mvn_density_diag(
-    x: &Array2<f64>,
-    means: &Array2<f64>,
-    covars: &Array2<f64>,
-) -> Array2<f64> {
+fn log_mvn_density_diag(x: &Array2<f64>, means: &Array2<f64>, covars: &Array2<f64>) -> Array2<f64> {
     let nc = means.nrows();
     let nf = means.ncols();
     let ns = x.nrows();
@@ -123,11 +119,7 @@ fn log_mvn_density_spherical(
 }
 
 /// Tied covariance: single covariance matrix (n_features, n_features) shared by all components.
-fn log_mvn_density_tied(
-    x: &Array2<f64>,
-    means: &Array2<f64>,
-    covar: &Array2<f64>,
-) -> Array2<f64> {
+fn log_mvn_density_tied(x: &Array2<f64>, means: &Array2<f64>, covar: &Array2<f64>) -> Array2<f64> {
     let nc = means.nrows();
     let nf = means.ncols();
 
@@ -148,11 +140,7 @@ fn log_mvn_density_tied(
 ///
 /// Uses Cholesky decomposition for numerical stability.
 /// Matches scipy's linalg.cholesky(cv, lower=True) convention.
-fn log_mvn_density_full(
-    x: &Array2<f64>,
-    means: &Array2<f64>,
-    covars: &Array3<f64>,
-) -> Array2<f64> {
+fn log_mvn_density_full(x: &Array2<f64>, means: &Array2<f64>, covars: &Array3<f64>) -> Array2<f64> {
     let nc = means.nrows();
     let nf = means.ncols();
     let ns = x.nrows();
@@ -173,8 +161,7 @@ fn log_mvn_density_full(
                 for i in 0..nf {
                     cv_reg[[i, i]] += min_covar;
                 }
-                cholesky_lower(&cv_reg)
-                    .expect("covars must be symmetric, positive-definite")
+                cholesky_lower(&cv_reg).expect("covars must be symmetric, positive-definite")
             }
         };
 

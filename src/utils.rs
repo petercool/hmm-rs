@@ -60,10 +60,7 @@ fn logsumexp_slice(v: &[f64]) -> f64 {
 
 /// Split concatenated observation matrix X into sub-sequences according to lengths.
 /// Returns a Vec of array views, one per sequence.
-pub fn split_x_lengths<'a>(
-    x: &'a Array2<f64>,
-    lengths: &[usize],
-) -> Vec<ArrayView2<'a, f64>> {
+pub fn split_x_lengths<'a>(x: &'a Array2<f64>, lengths: &[usize]) -> Vec<ArrayView2<'a, f64>> {
     let n_samples = x.nrows();
     let total: usize = lengths.iter().sum();
     assert_eq!(

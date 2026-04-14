@@ -46,8 +46,14 @@ fn main() {
         // Compute accuracy (accounting for label permutation)
         let accuracy = compute_best_accuracy(&true_states, &states, 3);
 
-        println!("{:<12} Score: {:>10.2}  AIC: {:>10.2}  BIC: {:>10.2}  Acc: {:.1}%",
-            name, score, aic, bic, accuracy * 100.0);
+        println!(
+            "{:<12} Score: {:>10.2}  AIC: {:>10.2}  BIC: {:>10.2}  Acc: {:.1}%",
+            name,
+            score,
+            aic,
+            bic,
+            accuracy * 100.0
+        );
 
         let means = model.emission.means_.as_ref().unwrap().clone();
         results.push((*name, states, means, score, aic, bic));
@@ -97,7 +103,11 @@ fn generate_clustered_data() -> (Array2<f64>, Vec<usize>) {
     (data, states)
 }
 
-fn compute_best_accuracy(true_states: &[usize], pred_states: &ndarray::Array1<usize>, k: usize) -> f64 {
+fn compute_best_accuracy(
+    true_states: &[usize],
+    pred_states: &ndarray::Array1<usize>,
+    k: usize,
+) -> f64 {
     // Try all permutations of labels to find best match
     let perms = generate_permutations(k);
     let n = true_states.len();
@@ -142,8 +152,14 @@ fn create_clustering_plot(
 
     // True clusters
     for s in 0..3 {
-        let x_vals: Vec<f64> = (0..n).filter(|&t| true_states[t] == s).map(|t| data[[t, 0]]).collect();
-        let y_vals: Vec<f64> = (0..n).filter(|&t| true_states[t] == s).map(|t| data[[t, 1]]).collect();
+        let x_vals: Vec<f64> = (0..n)
+            .filter(|&t| true_states[t] == s)
+            .map(|t| data[[t, 0]])
+            .collect();
+        let y_vals: Vec<f64> = (0..n)
+            .filter(|&t| true_states[t] == s)
+            .map(|t| data[[t, 1]])
+            .collect();
         let trace = Scatter::new(x_vals, y_vals)
             .mode(Mode::Markers)
             .name(format!("True {}", state_names[s]))

@@ -13,8 +13,12 @@ const POSTERIOR_TOL: f64 = 1e-9;
 
 fn load_fixture(name: &str) -> serde_json::Value {
     let path = format!("tests/fixtures/{}", name);
-    let data = fs::read_to_string(&path)
-        .unwrap_or_else(|_| panic!("Fixture not found: {}. Run: python3 tests/generate_fixtures.py", path));
+    let data = fs::read_to_string(&path).unwrap_or_else(|_| {
+        panic!(
+            "Fixture not found: {}. Run: python3 tests/generate_fixtures.py",
+            path
+        )
+    });
     serde_json::from_str(&data).unwrap()
 }
 
@@ -62,7 +66,9 @@ fn test_categorical_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "CategoricalHMM score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }
 
@@ -83,14 +89,17 @@ fn test_categorical_decode_parity() {
     let (rust_lp, rust_states) = model.decode(&x, &lengths, None).unwrap();
     let py_lp = fix["expected"]["decode_log_prob"].as_f64().unwrap();
     let py_states: Vec<usize> = fix["expected"]["decode_states"]
-        .as_array().unwrap()
-        .iter().map(|v| v.as_u64().unwrap() as usize)
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_u64().unwrap() as usize)
         .collect();
 
     assert!(
         (rust_lp - py_lp).abs() < SCORE_TOL,
         "CategoricalHMM decode log_prob: Rust={} Python={}",
-        rust_lp, py_lp
+        rust_lp,
+        py_lp
     );
     assert_eq!(
         rust_states.as_slice().unwrap(),
@@ -121,7 +130,10 @@ fn test_categorical_posteriors_parity() {
             assert!(
                 (rust_post[[i, j]] - py_post[[i, j]]).abs() < POSTERIOR_TOL,
                 "CategoricalHMM posteriors[{},{}]: Rust={} Python={} diff={}",
-                i, j, rust_post[[i, j]], py_post[[i, j]],
+                i,
+                j,
+                rust_post[[i, j]],
+                py_post[[i, j]],
                 (rust_post[[i, j]] - py_post[[i, j]]).abs()
             );
         }
@@ -153,7 +165,9 @@ fn test_gaussian_full_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "GaussianHMM(full) score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }
 
@@ -175,14 +189,17 @@ fn test_gaussian_full_decode_parity() {
     let (rust_lp, rust_states) = model.decode(&x, &lengths, None).unwrap();
     let py_lp = fix["expected"]["decode_log_prob"].as_f64().unwrap();
     let py_states: Vec<usize> = fix["expected"]["decode_states"]
-        .as_array().unwrap()
-        .iter().map(|v| v.as_u64().unwrap() as usize)
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_u64().unwrap() as usize)
         .collect();
 
     assert!(
         (rust_lp - py_lp).abs() < SCORE_TOL,
         "GaussianHMM(full) decode log_prob: Rust={} Python={}",
-        rust_lp, py_lp
+        rust_lp,
+        py_lp
     );
     assert_eq!(
         rust_states.as_slice().unwrap(),
@@ -227,7 +244,9 @@ fn test_gaussian_diag_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "GaussianHMM(diag) score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }
 
@@ -255,7 +274,9 @@ fn test_poisson_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "PoissonHMM score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }
 
@@ -276,14 +297,17 @@ fn test_poisson_decode_parity() {
     let (rust_lp, rust_states) = model.decode(&x, &lengths, None).unwrap();
     let py_lp = fix["expected"]["decode_log_prob"].as_f64().unwrap();
     let py_states: Vec<usize> = fix["expected"]["decode_states"]
-        .as_array().unwrap()
-        .iter().map(|v| v.as_u64().unwrap() as usize)
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_u64().unwrap() as usize)
         .collect();
 
     assert!(
         (rust_lp - py_lp).abs() < SCORE_TOL,
         "PoissonHMM decode log_prob: Rust={} Python={}",
-        rust_lp, py_lp
+        rust_lp,
+        py_lp
     );
     assert_eq!(
         rust_states.as_slice().unwrap(),
@@ -330,7 +354,9 @@ fn test_gaussian_spherical_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "GaussianHMM(spherical) score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }
 
@@ -363,7 +389,9 @@ fn test_gaussian_tied_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "GaussianHMM(tied) score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }
 
@@ -393,6 +421,8 @@ fn test_multinomial_score_parity() {
     assert!(
         (rust_score - py_score).abs() < SCORE_TOL,
         "MultinomialHMM score: Rust={} Python={} diff={}",
-        rust_score, py_score, (rust_score - py_score).abs()
+        rust_score,
+        py_score,
+        (rust_score - py_score).abs()
     );
 }

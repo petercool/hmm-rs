@@ -43,7 +43,12 @@ fn main() {
     let means = model.emission.means_.as_ref().unwrap();
     println!("\nLearned state means (return, volatility proxy):");
     for i in 0..3 {
-        println!("  State {}: [{:.4}, {:.4}]", i, means[[i, 0]], means[[i, 1]]);
+        println!(
+            "  State {}: [{:.4}, {:.4}]",
+            i,
+            means[[i, 0]],
+            means[[i, 1]]
+        );
     }
 
     // Compute model quality metrics
@@ -125,7 +130,11 @@ fn create_regime_plot(
     let mut plot = Plot::new();
 
     // 1. Price series colored by regime
-    let regime_colors = ["rgba(46,204,113,0.3)", "rgba(231,76,60,0.3)", "rgba(52,152,219,0.3)"];
+    let regime_colors = [
+        "rgba(46,204,113,0.3)",
+        "rgba(231,76,60,0.3)",
+        "rgba(52,152,219,0.3)",
+    ];
     let regime_names = ["Bull", "Bear", "Sideways"];
 
     // Add price trace
@@ -178,7 +187,9 @@ fn create_regime_plot(
             .map(|t| returns[[t, 0]])
             .collect();
         let trace = Bar::new(
-            (0..regime_returns.len()).map(|i| i as f64).collect::<Vec<_>>(),
+            (0..regime_returns.len())
+                .map(|i| i as f64)
+                .collect::<Vec<_>>(),
             regime_returns,
         )
         .name(format!("{} returns", regime_names[s]))
@@ -187,7 +198,9 @@ fn create_regime_plot(
     }
 
     let layout = Layout::new()
-        .title(Title::with_text("Stock Market Regime Detection with Gaussian HMM"))
+        .title(Title::with_text(
+            "Stock Market Regime Detection with Gaussian HMM",
+        ))
         .x_axis(
             Axis::new()
                 .title(Title::with_text("Trading Day"))

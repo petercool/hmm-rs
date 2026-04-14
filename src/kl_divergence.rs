@@ -55,18 +55,14 @@ pub fn kl_multivariate_normal(
 
 /// KL divergence between two Gamma distributions.
 pub fn kl_gamma(b_q: f64, c_q: f64, b_p: f64, c_p: f64) -> f64 {
-    (b_q - b_p) * digamma(b_q) - ln_gamma(b_q) + ln_gamma(b_p)
+    (b_q - b_p) * digamma(b_q) - ln_gamma(b_q)
+        + ln_gamma(b_p)
         + b_p * (c_q.ln() - c_p.ln())
         + b_q * (c_p - c_q) / c_q
 }
 
 /// KL divergence between two Wishart distributions.
-pub fn kl_wishart(
-    dof_q: f64,
-    scale_q: &Array2<f64>,
-    dof_p: f64,
-    scale_p: &Array2<f64>,
-) -> f64 {
+pub fn kl_wishart(dof_q: f64, scale_q: &Array2<f64>, dof_p: f64, scale_p: &Array2<f64>) -> f64 {
     let d = scale_p.nrows();
 
     let e_q = expected_log_det_wishart(dof_q, scale_q);
@@ -179,7 +175,11 @@ mod tests {
     fn test_kl_dirichlet_same() {
         let p = array![1.0, 1.0, 1.0];
         let kl = kl_dirichlet(&p, &p);
-        assert!(kl.abs() < 1e-12, "KL of same distribution should be 0, got {}", kl);
+        assert!(
+            kl.abs() < 1e-12,
+            "KL of same distribution should be 0, got {}",
+            kl
+        );
     }
 
     #[test]
@@ -230,7 +230,9 @@ mod tests {
                 assert!(
                     (product[[i, j]] - expected).abs() < 1e-12,
                     "product[{},{}] = {}",
-                    i, j, product[[i, j]]
+                    i,
+                    j,
+                    product[[i, j]]
                 );
             }
         }

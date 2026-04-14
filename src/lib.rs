@@ -48,15 +48,17 @@ pub mod vhmm;
 /// Convenience re-exports for common usage.
 pub mod prelude {
     pub use crate::base::{BaseHmm, DecoderAlgorithm, EmissionModel, Implementation, ParamFlags};
+    pub use crate::emissions::CovarianceType;
     pub use crate::emissions::categorical::{CategoricalEmissions, CategoricalHmm};
     pub use crate::emissions::gaussian::{GaussianEmissions, GaussianHmm};
     pub use crate::emissions::gmm::{GmmEmissions, GmmHmm};
     pub use crate::emissions::multinomial::{MultinomialEmissions, MultinomialHmm};
     pub use crate::emissions::poisson::{PoissonEmissions, PoissonHmm};
-    pub use crate::emissions::CovarianceType;
     pub use crate::error::{HmmError, Result};
     pub use crate::monitor::ConvergenceMonitor;
-    pub use crate::vhmm::categorical::{VariationalCategoricalEmissions, VariationalCategoricalHmm};
-    pub use crate::vhmm::gaussian::{VariationalGaussianEmissions, VariationalGaussianHmm};
     pub use crate::vhmm::VariationalBaseHmm;
+    pub use crate::vhmm::categorical::{
+        VariationalCategoricalEmissions, VariationalCategoricalHmm,
+    };
+    pub use crate::vhmm::gaussian::{VariationalGaussianEmissions, VariationalGaussianHmm};
 }

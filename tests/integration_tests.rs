@@ -37,8 +37,14 @@ fn test_gaussian_serialization_roundtrip() {
         .with_tol(1e-4);
 
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [4.9, 5.1],
-        [0.2, -0.1], [5.1, 4.9], [0.0, 0.2], [5.0, 5.2],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [4.9, 5.1],
+        [0.2, -0.1],
+        [5.1, 4.9],
+        [0.0, 0.2],
+        [5.0, 5.2],
     ];
     model.fit(&x, &[8]).unwrap();
 
@@ -57,9 +63,7 @@ fn test_gaussian_serialization_roundtrip() {
 
 #[test]
 fn test_poisson_serialization_roundtrip() {
-    let mut model = PoissonHmm::poisson(2)
-        .with_n_iter(10)
-        .with_tol(1e-4);
+    let mut model = PoissonHmm::poisson(2).with_n_iter(10).with_tol(1e-4);
 
     let x = array![[1.0], [0.0], [2.0], [5.0], [6.0], [4.0], [1.0], [0.0]];
     model.fit(&x, &[8]).unwrap();
@@ -90,7 +94,10 @@ fn test_single_state_categorical() {
     assert!(score.is_finite());
 
     let (_, states) = model.decode(&x, &[5], None).unwrap();
-    assert!(states.iter().all(|&s| s == 0), "single-state model should decode all to state 0");
+    assert!(
+        states.iter().all(|&s| s == 0),
+        "single-state model should decode all to state 0"
+    );
 }
 
 #[test]
@@ -101,8 +108,14 @@ fn test_single_sample_sequence() {
 
     // Train on normal data
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [4.9, 5.1],
-        [0.2, -0.1], [5.1, 4.9], [0.0, 0.2], [5.0, 5.2],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [4.9, 5.1],
+        [0.2, -0.1],
+        [5.1, 4.9],
+        [0.0, 0.2],
+        [5.0, 5.2],
     ];
     model.fit(&x, &[8]).unwrap();
 
@@ -143,11 +156,18 @@ fn test_gaussian_multi_sequence_fit() {
 
     let x = array![
         // Sequence 1
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [5.1, 4.9],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [5.1, 4.9],
         // Sequence 2
-        [5.0, 5.0], [4.9, 5.1], [0.0, 0.0], [-0.1, 0.1],
+        [5.0, 5.0],
+        [4.9, 5.1],
+        [0.0, 0.0],
+        [-0.1, 0.1],
         // Sequence 3
-        [0.0, 0.1], [5.0, 5.0],
+        [0.0, 0.1],
+        [5.0, 5.0],
     ];
     let lengths = [4, 4, 2];
 
@@ -166,9 +186,18 @@ fn test_gaussian_multi_sequence_fit() {
 #[test]
 fn test_all_covariance_types_converge() {
     let x = array![
-        [0.1, 0.2], [-0.1, 0.3], [0.2, -0.1], [0.0, 0.1],
-        [5.1, 5.2], [4.9, 5.3], [5.2, 4.9], [5.0, 5.1],
-        [0.0, 0.0], [5.0, 5.0], [0.1, -0.1], [4.8, 5.2],
+        [0.1, 0.2],
+        [-0.1, 0.3],
+        [0.2, -0.1],
+        [0.0, 0.1],
+        [5.1, 5.2],
+        [4.9, 5.3],
+        [5.2, 4.9],
+        [5.0, 5.1],
+        [0.0, 0.0],
+        [5.0, 5.0],
+        [0.1, -0.1],
+        [4.8, 5.2],
     ];
     let lengths = [x.nrows()];
 
@@ -204,12 +233,20 @@ fn test_viterbi_vs_map_consistency() {
         .with_tol(1e-4);
 
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [5.1, 4.9],
-        [0.0, 0.0], [5.0, 5.0], [0.1, -0.1], [5.0, 5.1],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [5.1, 4.9],
+        [0.0, 0.0],
+        [5.0, 5.0],
+        [0.1, -0.1],
+        [5.0, 5.1],
     ];
     model.fit(&x, &[8]).unwrap();
 
-    let (_, viterbi_states) = model.decode(&x, &[8], Some(DecoderAlgorithm::Viterbi)).unwrap();
+    let (_, viterbi_states) = model
+        .decode(&x, &[8], Some(DecoderAlgorithm::Viterbi))
+        .unwrap();
     let (_, map_states) = model.decode(&x, &[8], Some(DecoderAlgorithm::Map)).unwrap();
 
     // Viterbi and MAP should produce similar (not necessarily identical) results
@@ -234,10 +271,10 @@ fn test_viterbi_vs_map_consistency() {
 fn test_log_vs_scaling_score_match() {
     // Create model with known parameters
     let emission = GaussianEmissions::new(CovarianceType::Diag);
-    let mut model_log = GaussianHmm::gaussian(2, CovarianceType::Diag)
-        .with_implementation(Implementation::Log);
-    let mut model_scaling = GaussianHmm::gaussian(2, CovarianceType::Diag)
-        .with_implementation(Implementation::Scaling);
+    let mut model_log =
+        GaussianHmm::gaussian(2, CovarianceType::Diag).with_implementation(Implementation::Log);
+    let mut model_scaling =
+        GaussianHmm::gaussian(2, CovarianceType::Diag).with_implementation(Implementation::Scaling);
 
     // Set identical parameters on both
     let startprob = array![0.6, 0.4];
@@ -255,8 +292,12 @@ fn test_log_vs_scaling_score_match() {
     }
 
     let x = array![
-        [0.1, 0.2], [0.0, -0.1], [5.0, 5.1], [4.9, 5.0],
-        [0.2, 0.1], [5.1, 4.9],
+        [0.1, 0.2],
+        [0.0, -0.1],
+        [5.0, 5.1],
+        [4.9, 5.0],
+        [0.2, 0.1],
+        [5.1, 4.9],
     ];
 
     let score_log = model_log.score(&x, &[6]).unwrap();
@@ -281,9 +322,18 @@ fn test_gaussian_likelihood_non_decreasing() {
         .with_tol(1e-12); // very tight to force many iterations
 
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [0.2, -0.1], [0.0, 0.2],
-        [5.0, 5.0], [5.1, 4.9], [4.9, 5.1], [5.0, 5.0],
-        [0.1, 0.0], [5.0, 5.1], [-0.1, 0.1], [4.9, 5.0],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [0.2, -0.1],
+        [0.0, 0.2],
+        [5.0, 5.0],
+        [5.1, 4.9],
+        [4.9, 5.1],
+        [5.0, 5.0],
+        [0.1, 0.0],
+        [5.0, 5.1],
+        [-0.1, 0.1],
+        [4.9, 5.0],
     ];
     model.fit(&x, &[12]).unwrap();
 
@@ -313,8 +363,14 @@ fn test_posteriors_sum_to_one() {
         .with_tol(1e-4);
 
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [10.0, 0.0],
-        [0.0, 0.0], [5.0, 5.0], [10.0, 0.0], [0.1, -0.1],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [10.0, 0.0],
+        [0.0, 0.0],
+        [5.0, 5.0],
+        [10.0, 0.0],
+        [0.1, -0.1],
     ];
     model.fit(&x, &[8]).unwrap();
 
@@ -333,7 +389,11 @@ fn test_posteriors_sum_to_one() {
 
     // All values should be in [0, 1]
     for &v in posteriors.iter() {
-        assert!(v >= -1e-10 && v <= 1.0 + 1e-10, "posterior value out of range: {}", v);
+        assert!(
+            v >= -1e-10 && v <= 1.0 + 1e-10,
+            "posterior value out of range: {}",
+            v
+        );
     }
 }
 
@@ -346,11 +406,7 @@ fn test_stationary_distribution() {
     let mut model = CategoricalHmm::categorical(3);
     model.emission.n_features = Some(2);
     model.startprob_ = array![0.33, 0.34, 0.33];
-    model.transmat_ = array![
-        [0.7, 0.2, 0.1],
-        [0.1, 0.7, 0.2],
-        [0.2, 0.1, 0.7]
-    ];
+    model.transmat_ = array![[0.7, 0.2, 0.1], [0.1, 0.7, 0.2], [0.2, 0.1, 0.7]];
     model.emission.emissionprob_ = Some(array![[0.5, 0.5], [0.3, 0.7], [0.8, 0.2]]);
     model.fitted = true;
 
@@ -384,12 +440,39 @@ fn test_stationary_distribution() {
 
 #[test]
 fn test_gmm_different_covariance_types() {
-    // GMM needs more data than simple Gaussian HMM due to mixture components
+    // GMM needs more data than simple Gaussian HMM due to mixture components.
+    // Use well-separated clusters and fixed seed for cross-platform reproducibility.
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [-0.1, 0.2], [0.2, -0.1], [0.0, 0.3],
-        [5.0, 5.0], [5.1, 4.9], [4.9, 5.1], [5.2, 5.0], [5.0, 4.8],
-        [0.1, 0.0], [5.0, 5.1], [-0.2, 0.1], [4.8, 5.2], [0.0, -0.1],
-        [5.1, 5.1], [0.2, 0.2], [4.9, 4.9], [0.0, 0.0], [5.0, 5.0],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [-0.1, 0.2],
+        [0.2, -0.1],
+        [0.0, 0.3],
+        [-0.2, 0.0],
+        [0.3, 0.1],
+        [0.1, -0.2],
+        [0.0, 0.0],
+        [-0.1, 0.1],
+        [5.0, 5.0],
+        [5.1, 4.9],
+        [4.9, 5.1],
+        [5.2, 5.0],
+        [5.0, 4.8],
+        [4.8, 5.2],
+        [5.0, 5.1],
+        [5.1, 5.1],
+        [4.9, 4.9],
+        [5.0, 5.0],
+        [0.1, 0.0],
+        [5.0, 5.1],
+        [-0.2, 0.1],
+        [4.8, 5.2],
+        [0.0, -0.1],
+        [5.1, 5.1],
+        [0.2, 0.2],
+        [4.9, 4.9],
+        [0.0, 0.0],
+        [5.0, 5.0],
     ];
     let lengths = [x.nrows()];
 
@@ -401,7 +484,8 @@ fn test_gmm_different_covariance_types() {
     ] {
         let mut model = GmmHmm::gmm(2, 2, cov_type)
             .with_n_iter(30)
-            .with_tol(1e-4);
+            .with_tol(1e-4)
+            .with_random_state(42);
 
         model.fit(&x, &lengths).unwrap();
         let score = model.score(&x, &lengths).unwrap();
@@ -426,9 +510,21 @@ fn test_variational_categorical_convergence() {
     model.emission.n_features = Some(3);
 
     let x = array![
-        [0.0], [1.0], [2.0], [0.0], [1.0],
-        [0.0], [0.0], [1.0], [2.0], [2.0],
-        [1.0], [0.0], [1.0], [2.0], [0.0],
+        [0.0],
+        [1.0],
+        [2.0],
+        [0.0],
+        [1.0],
+        [0.0],
+        [0.0],
+        [1.0],
+        [2.0],
+        [2.0],
+        [1.0],
+        [0.0],
+        [1.0],
+        [2.0],
+        [0.0],
     ];
     model.fit(&x, &[15]).unwrap();
 
@@ -443,9 +539,16 @@ fn test_variational_categorical_convergence() {
 #[test]
 fn test_variational_gaussian_produces_finite_results() {
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [5.1, 4.9],
-        [0.0, 0.2], [5.0, 5.1], [-0.1, 0.0], [4.9, 5.0],
-        [0.1, -0.1], [5.0, 5.0],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [5.1, 4.9],
+        [0.0, 0.2],
+        [5.0, 5.1],
+        [-0.1, 0.0],
+        [4.9, 5.0],
+        [0.1, -0.1],
+        [5.0, 5.0],
     ];
 
     let mut model = VariationalGaussianHmm::variational_gaussian(2, CovarianceType::Full)
@@ -469,9 +572,18 @@ fn test_variational_gaussian_produces_finite_results() {
 fn test_aic_bic_ordering() {
     // More complex model should have better likelihood but may have worse BIC
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [5.1, 4.9],
-        [0.0, 0.2], [5.0, 5.1], [-0.1, 0.0], [4.9, 5.0],
-        [0.1, -0.1], [5.0, 5.0], [0.0, 0.0], [5.1, 5.1],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [5.1, 4.9],
+        [0.0, 0.2],
+        [5.0, 5.1],
+        [-0.1, 0.0],
+        [4.9, 5.0],
+        [0.1, -0.1],
+        [5.0, 5.0],
+        [0.0, 0.0],
+        [5.1, 5.1],
     ];
     let lengths = [12];
 
@@ -506,8 +618,8 @@ fn test_sample_then_fit_recovers_structure() {
     source.startprob_ = array![0.8, 0.2];
     source.transmat_ = array![[0.9, 0.1], [0.1, 0.9]];
     source.emission.emissionprob_ = Some(array![
-        [0.7, 0.2, 0.05, 0.05],  // State 0: mostly symbol 0
-        [0.05, 0.05, 0.2, 0.7]   // State 1: mostly symbol 3
+        [0.7, 0.2, 0.05, 0.05], // State 0: mostly symbol 0
+        [0.05, 0.05, 0.2, 0.7]  // State 1: mostly symbol 3
     ]);
     source.fitted = true;
 
@@ -548,10 +660,8 @@ fn test_sample_then_fit_recovers_structure() {
 
 #[test]
 fn test_scaling_vs_log_categorical() {
-    let mut model_log = CategoricalHmm::categorical(2)
-        .with_implementation(Implementation::Log);
-    let mut model_sc = CategoricalHmm::categorical(2)
-        .with_implementation(Implementation::Scaling);
+    let mut model_log = CategoricalHmm::categorical(2).with_implementation(Implementation::Log);
+    let mut model_sc = CategoricalHmm::categorical(2).with_implementation(Implementation::Scaling);
     model_log.emission.n_features = Some(3);
     model_sc.emission.n_features = Some(3);
 
@@ -579,8 +689,12 @@ fn test_scaling_vs_log_categorical() {
 #[test]
 fn test_scaling_vs_log_gaussian_all_covariance_types() {
     let x = array![
-        [0.1, 0.2], [0.0, -0.1], [5.0, 5.1], [4.9, 5.0],
-        [0.2, 0.1], [5.1, 4.9],
+        [0.1, 0.2],
+        [0.0, -0.1],
+        [5.0, 5.1],
+        [4.9, 5.0],
+        [0.2, 0.1],
+        [5.1, 4.9],
     ];
 
     for cov_type in [
@@ -617,8 +731,14 @@ fn test_scaling_vs_log_gaussian_all_covariance_types() {
 #[test]
 fn test_random_state_reproducibility() {
     let x = array![
-        [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [5.1, 4.9],
-        [0.0, 0.2], [5.0, 5.1], [-0.1, 0.0], [4.9, 5.0],
+        [0.0, 0.0],
+        [0.1, 0.1],
+        [5.0, 5.0],
+        [5.1, 4.9],
+        [0.0, 0.2],
+        [5.0, 5.1],
+        [-0.1, 0.0],
+        [4.9, 5.0],
     ];
     let lengths = [8];
 
@@ -652,9 +772,7 @@ fn test_random_state_reproducibility() {
 fn test_aic_bic_parameter_count() {
     // CategoricalHMM with nc=2, nf=3
     // Free params: s=(2-1)=1, t=2*(2-1)=2, e=2*(3-1)=4 => total=7
-    let mut model = CategoricalHmm::categorical(2)
-        .with_n_iter(5)
-        .with_tol(1e-4);
+    let mut model = CategoricalHmm::categorical(2).with_n_iter(5).with_tol(1e-4);
     model.emission.n_features = Some(3);
 
     let x = array![[0.0], [1.0], [2.0], [0.0], [1.0], [2.0], [0.0], [1.0]];

@@ -74,8 +74,14 @@ fn main() {
         .min_by(|a, b| a.3.partial_cmp(&b.3).unwrap())
         .unwrap();
 
-    println!("\nOptimal by AIC: {} states (AIC={:.2})", optimal_aic.0, optimal_aic.2);
-    println!("Optimal by BIC: {} states (BIC={:.2})", optimal_bic.0, optimal_bic.3);
+    println!(
+        "\nOptimal by AIC: {} states (AIC={:.2})",
+        optimal_aic.0, optimal_aic.2
+    );
+    println!(
+        "Optimal by BIC: {} states (BIC={:.2})",
+        optimal_bic.0, optimal_bic.3
+    );
 
     // Create visualization
     create_model_selection_plot(&best_scores);
@@ -148,7 +154,9 @@ fn create_model_selection_plot(scores: &[(usize, f64, f64, f64)]) {
     plot.add_trace(bic_trace);
 
     let layout = Layout::new()
-        .title(Title::with_text("Model Selection: AIC & BIC vs Number of States"))
+        .title(Title::with_text(
+            "Model Selection: AIC & BIC vs Number of States",
+        ))
         .x_axis(Axis::new().title(Title::with_text("Number of Hidden States")))
         .y_axis(Axis::new().title(Title::with_text("Information Criterion")))
         .y_axis2(

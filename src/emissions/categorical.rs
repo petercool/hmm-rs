@@ -166,10 +166,7 @@ impl EmissionModel for CategoricalEmissions {
     fn initialize_sufficient_statistics(&self, n_components: usize) -> SufficientStatistics {
         let nf = self.n_features.unwrap();
         let mut stats = SufficientStatistics::new();
-        stats.insert(
-            "obs".to_string(),
-            ArrayD::zeros(IxDyn(&[n_components, nf])),
-        );
+        stats.insert("obs".to_string(), ArrayD::zeros(IxDyn(&[n_components, nf])));
         stats
     }
 
@@ -297,10 +294,7 @@ mod tests {
         // Set parameters manually
         model.startprob_ = array![0.6, 0.4];
         model.transmat_ = array![[0.7, 0.3], [0.4, 0.6]];
-        model.emission.emissionprob_ = Some(array![
-            [0.5, 0.3, 0.2],
-            [0.1, 0.4, 0.5]
-        ]);
+        model.emission.emissionprob_ = Some(array![[0.5, 0.3, 0.2], [0.1, 0.4, 0.5]]);
         model.fitted = true;
 
         let mut rng = rand::rng();
@@ -326,8 +320,16 @@ mod tests {
         model.emission.n_features = Some(3);
 
         let x = array![
-            [0.0], [1.0], [2.0], [0.0], [1.0],
-            [2.0], [2.0], [1.0], [0.0], [0.0]
+            [0.0],
+            [1.0],
+            [2.0],
+            [0.0],
+            [1.0],
+            [2.0],
+            [2.0],
+            [1.0],
+            [0.0],
+            [0.0]
         ];
         let lengths = [5, 5];
 

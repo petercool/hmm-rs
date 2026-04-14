@@ -147,10 +147,7 @@ impl EmissionModel for MultinomialEmissions {
     fn initialize_sufficient_statistics(&self, n_components: usize) -> SufficientStatistics {
         let nf = self.n_features.unwrap();
         let mut stats = SufficientStatistics::new();
-        stats.insert(
-            "obs".to_string(),
-            ArrayD::zeros(IxDyn(&[n_components, nf])),
-        );
+        stats.insert("obs".to_string(), ArrayD::zeros(IxDyn(&[n_components, nf])));
         stats
     }
 

@@ -2,12 +2,12 @@ pub mod categorical;
 pub mod gaussian;
 
 use ndarray::{Array1, Array2, ArrayD, IxDyn};
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 use statrs::function::gamma::digamma;
 
 use crate::algorithms;
-use crate::base::{sample_dirichlet, EmissionModel, ParamFlags, SufficientStatistics};
+use crate::base::{EmissionModel, ParamFlags, SufficientStatistics, sample_dirichlet};
 use crate::error::{HmmError, Result};
 use crate::kl_divergence;
 use crate::monitor::ConvergenceMonitor;
@@ -130,8 +130,7 @@ impl<E: VariationalEmissionModel> VariationalBaseHmm<E> {
         // Initialize startprob prior/posterior
         if self.init_params.contains('s') || self.startprob_posterior_.len() != nc {
             self.startprob_prior_ = Array1::from_elem(nc, uniform);
-            self.startprob_posterior_ =
-                sample_dirichlet(nc, uniform, rng) * lengths.len() as f64;
+            self.startprob_posterior_ = sample_dirichlet(nc, uniform, rng) * lengths.len() as f64;
         }
 
         // Initialize transmat prior/posterior
@@ -291,8 +290,7 @@ impl<E: VariationalEmissionModel> VariationalBaseHmm<E> {
             if self.params.contains('s') {
                 let start = stats.get("start").unwrap();
                 for i in 0..self.n_components {
-                    self.startprob_posterior_[i] =
-                        self.startprob_prior_[i] + start[IxDyn(&[i])];
+                    self.startprob_posterior_[i] = self.startprob_prior_[i] + start[IxDyn(&[i])];
                 }
                 // Compat point estimate
                 let sum = self.startprob_posterior_.sum();
@@ -351,11 +349,7 @@ impl<E: VariationalEmissionModel> VariationalBaseHmm<E> {
         Ok(log_prob)
     }
 
-    pub fn decode(
-        &self,
-        x: &Array2<f64>,
-        lengths: &[usize],
-    ) -> Result<(f64, Array1<usize>)> {
+    pub fn decode(&self, x: &Array2<f64>, lengths: &[usize]) -> Result<(f64, Array1<usize>)> {
         if !self.fitted {
             return Err(HmmError::NotFitted("not fitted".into()));
         }

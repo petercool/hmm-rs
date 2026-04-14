@@ -179,7 +179,8 @@ impl EmissionModel for GmmEmissions {
             for c in 0..n_components {
                 for m in 0..nm {
                     let idx = ((c * nm + m) * ns) / (n_components * nm);
-                    means.index_axis_mut(Axis(0), c)
+                    means
+                        .index_axis_mut(Axis(0), c)
                         .row_mut(m)
                         .assign(&x.row(idx.min(ns - 1)));
                 }
@@ -219,8 +220,7 @@ impl EmissionModel for GmmEmissions {
                 }
                 CovarianceType::Spherical => {
                     let mean_var = (0..nf).map(|i| cv[[i, i]]).sum::<f64>() / nf as f64;
-                    self.covars_spherical_ =
-                        Some(Array2::from_elem((n_components, nm), mean_var));
+                    self.covars_spherical_ = Some(Array2::from_elem((n_components, nm), mean_var));
                 }
                 CovarianceType::Full => {
                     let mut covars = ndarray::Array4::<f64>::zeros((n_components, nm, nf, nf));
@@ -377,8 +377,7 @@ impl EmissionModel for GmmEmissions {
 
             for s in 0..ns {
                 for m in 0..nm {
-                    post_comp_mix[s * nc * nm + p * nm + m] =
-                        posteriors[[s, p]] * mix_post[[s, m]];
+                    post_comp_mix[s * nc * nm + p * nm + m] = posteriors[[s, p]] * mix_post[[s, m]];
                 }
             }
         }
@@ -508,8 +507,7 @@ impl EmissionModel for GmmEmissions {
                     let denom = if denom == 0.0 { 1.0 } else { denom };
                     for f in 0..nf {
                         means[[c, m, f]] =
-                            (self.means_weight * self.means_prior + m_n[IxDyn(&[c, m, f])])
-                                / denom;
+                            (self.means_weight * self.means_prior + m_n[IxDyn(&[c, m, f])]) / denom;
                     }
                 }
             }
@@ -537,8 +535,7 @@ impl EmissionModel for GmmEmissions {
                     for c in 0..nc {
                         for m in 0..nm {
                             let denom = nf as f64 * (pms[IxDyn(&[c, m])] + 1.0);
-                            covars[[c, m]] =
-                                (self.covars_prior + c_n[IxDyn(&[c, m])]) / denom;
+                            covars[[c, m]] = (self.covars_prior + c_n[IxDyn(&[c, m])]) / denom;
                         }
                     }
                 }
@@ -615,9 +612,12 @@ impl GmmEmissions {
                 }
                 cov
             }
-            CovarianceType::Tied => {
-                self.covars_tied_.as_ref().unwrap().index_axis(Axis(0), state).to_owned()
-            }
+            CovarianceType::Tied => self
+                .covars_tied_
+                .as_ref()
+                .unwrap()
+                .index_axis(Axis(0), state)
+                .to_owned(),
             CovarianceType::Diag => {
                 let c = self.covars_diag_.as_ref().unwrap();
                 let mut cov = Array2::<f64>::zeros((nf, nf));
@@ -656,8 +656,16 @@ mod tests {
     #[test]
     fn test_gmm_diag_fit_score() {
         let x = array![
-            [0.1, 0.2], [-0.1, 0.3], [0.2, -0.1], [0.0, 0.1], [0.3, 0.0],
-            [5.1, 5.2], [4.9, 5.3], [5.2, 4.9], [5.0, 5.1], [5.3, 5.0],
+            [0.1, 0.2],
+            [-0.1, 0.3],
+            [0.2, -0.1],
+            [0.0, 0.1],
+            [0.3, 0.0],
+            [5.1, 5.2],
+            [4.9, 5.3],
+            [5.2, 4.9],
+            [5.0, 5.1],
+            [5.3, 5.0],
         ];
         let lengths = [x.nrows()];
 
@@ -677,9 +685,7 @@ mod tests {
     #[test]
     fn test_gmm_single_mix() {
         // n_mix=1 should behave like GaussianHMM
-        let x = array![
-            [0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [4.9, 5.1],
-        ];
+        let x = array![[0.0, 0.0], [0.1, 0.1], [5.0, 5.0], [4.9, 5.1],];
         let lengths = [4];
 
         let mut model = GmmHmm::gmm(2, 1, CovarianceType::Diag)

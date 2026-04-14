@@ -5,8 +5,8 @@
 use std::collections::HashMap;
 
 use ndarray::{Array1, Array2, ArrayD, IxDyn};
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 use rand_distr::Gamma;
 use serde::{Deserialize, Serialize};
 
@@ -156,7 +156,7 @@ impl<E: EmissionModel> BaseHmm<E> {
             n_iter: 10,
             tol: 1e-2,
             verbose: false,
-            params: ParamFlags::new(""),     // will be set by subtype
+            params: ParamFlags::new(""),      // will be set by subtype
             init_params: ParamFlags::new(""), // will be set by subtype
             random_state: None,
             startprob_prior: 1.0,
@@ -246,9 +246,7 @@ impl<E: EmissionModel> BaseHmm<E> {
         }
 
         // Initialize transmat
-        if self.init_params.contains('t')
-            || self.transmat_.shape() != [nc, nc]
-        {
+        if self.init_params.contains('t') || self.transmat_.shape() != [nc, nc] {
             let mut transmat = Array2::<f64>::zeros((nc, nc));
             for i in 0..nc {
                 let row = sample_dirichlet(nc, init, rng);
@@ -349,21 +347,16 @@ impl<E: EmissionModel> BaseHmm<E> {
     }
 
     /// Perform the E-step: compute sufficient statistics and log-likelihood.
-    fn do_estep(
-        &self,
-        x: &Array2<f64>,
-        lengths: &[usize],
-    ) -> Result<(SufficientStatistics, f64)> {
+    fn do_estep(&self, x: &Array2<f64>, lengths: &[usize]) -> Result<(SufficientStatistics, f64)> {
         let mut stats = self.initialize_sufficient_statistics();
         let mut curr_logprob = 0.0;
 
         for sub_x in utils::split_x_lengths(x, lengths) {
             let sub_x_owned = sub_x.to_owned();
-            let (lattice, logprob, posteriors, fwdlattice, bwdlattice) =
-                match self.implementation {
-                    Implementation::Log => self.fit_log(&sub_x_owned)?,
-                    Implementation::Scaling => self.fit_scaling(&sub_x_owned)?,
-                };
+            let (lattice, logprob, posteriors, fwdlattice, bwdlattice) = match self.implementation {
+                Implementation::Log => self.fit_log(&sub_x_owned)?,
+                Implementation::Scaling => self.fit_scaling(&sub_x_owned)?,
+            };
 
             // Accumulate base sufficient statistics
             self.accumulate_base_sufficient_statistics(
@@ -389,10 +382,7 @@ impl<E: EmissionModel> BaseHmm<E> {
     }
 
     /// Log implementation of the E-step for a single sequence.
-    fn fit_log(
-        &self,
-        x: &Array2<f64>,
-    ) -> Result<EStepResult> {
+    fn fit_log(&self, x: &Array2<f64>) -> Result<EStepResult> {
         let log_frameprob = self.emission.compute_log_likelihood(x);
         let (log_prob, fwdlattice) =
             algorithms::forward_log(&self.startprob_, &self.transmat_, &log_frameprob);
@@ -403,10 +393,7 @@ impl<E: EmissionModel> BaseHmm<E> {
     }
 
     /// Scaling implementation of the E-step for a single sequence.
-    fn fit_scaling(
-        &self,
-        x: &Array2<f64>,
-    ) -> Result<EStepResult> {
+    fn fit_scaling(&self, x: &Array2<f64>) -> Result<EStepResult> {
         let frameprob = self.emission.compute_likelihood(x);
         let (log_prob, fwdlattice, scaling_factors) =
             algorithms::forward_scaling(&self.startprob_, &self.transmat_, &frameprob)?;
@@ -424,18 +411,9 @@ impl<E: EmissionModel> BaseHmm<E> {
     fn initialize_sufficient_statistics(&self) -> SufficientStatistics {
         let nc = self.n_components;
         let mut stats = self.emission.initialize_sufficient_statistics(nc);
-        stats.insert(
-            "nobs".to_string(),
-            ArrayD::zeros(IxDyn(&[1])),
-        );
-        stats.insert(
-            "start".to_string(),
-            ArrayD::zeros(IxDyn(&[nc])),
-        );
-        stats.insert(
-            "trans".to_string(),
-            ArrayD::zeros(IxDyn(&[nc, nc])),
-        );
+        stats.insert("nobs".to_string(), ArrayD::zeros(IxDyn(&[1])));
+        stats.insert("start".to_string(), ArrayD::zeros(IxDyn(&[nc])));
+        stats.insert("trans".to_string(), ArrayD::zeros(IxDyn(&[nc, nc])));
         stats
     }
 
@@ -530,9 +508,7 @@ impl<E: EmissionModel> BaseHmm<E> {
 
     fn check_fitted(&self) -> Result<()> {
         if !self.fitted {
-            return Err(HmmError::NotFitted(
-                "model has not been fitted yet".into(),
-            ));
+            return Err(HmmError::NotFitted("model has not been fitted yet".into()));
         }
         Ok(())
     }
@@ -545,11 +521,7 @@ impl<E: EmissionModel> BaseHmm<E> {
     }
 
     /// Compute log probability and posteriors.
-    pub fn score_samples(
-        &self,
-        x: &Array2<f64>,
-        lengths: &[usize],
-    ) -> Result<(f64, Array2<f64>)> {
+    pub fn score_samples(&self, x: &Array2<f64>, lengths: &[usize]) -> Result<(f64, Array2<f64>)> {
         self.check_fitted()?;
         self.check()?;
 
@@ -561,27 +533,18 @@ impl<E: EmissionModel> BaseHmm<E> {
             match self.implementation {
                 Implementation::Log => {
                     let log_frameprob = self.emission.compute_log_likelihood(&sub_x_owned);
-                    let (log_probij, fwdlattice) = algorithms::forward_log(
-                        &self.startprob_,
-                        &self.transmat_,
-                        &log_frameprob,
-                    );
-                    let bwdlattice = algorithms::backward_log(
-                        &self.startprob_,
-                        &self.transmat_,
-                        &log_frameprob,
-                    );
+                    let (log_probij, fwdlattice) =
+                        algorithms::forward_log(&self.startprob_, &self.transmat_, &log_frameprob);
+                    let bwdlattice =
+                        algorithms::backward_log(&self.startprob_, &self.transmat_, &log_frameprob);
                     let posteriors = compute_posteriors_log(&fwdlattice, &bwdlattice);
                     log_prob += log_probij;
                     all_posteriors.push(posteriors);
                 }
                 Implementation::Scaling => {
                     let frameprob = self.emission.compute_likelihood(&sub_x_owned);
-                    let (log_probij, fwdlattice, scaling) = algorithms::forward_scaling(
-                        &self.startprob_,
-                        &self.transmat_,
-                        &frameprob,
-                    )?;
+                    let (log_probij, fwdlattice, scaling) =
+                        algorithms::forward_scaling(&self.startprob_, &self.transmat_, &frameprob)?;
                     let bwdlattice = algorithms::backward_scaling(
                         &self.startprob_,
                         &self.transmat_,
@@ -632,9 +595,7 @@ impl<E: EmissionModel> BaseHmm<E> {
                     let map_log_prob: f64 = posteriors
                         .rows()
                         .into_iter()
-                        .map(|row| {
-                            row.iter().cloned().fold(f64::NEG_INFINITY, f64::max)
-                        })
+                        .map(|row| row.iter().cloned().fold(f64::NEG_INFINITY, f64::max))
                         .sum();
                     let map_states = Array1::from_vec(
                         posteriors
@@ -709,10 +670,7 @@ impl<E: EmissionModel> BaseHmm<E> {
                     startprob_cdf[i] = cumsum;
                 }
                 let u: f64 = rng.random();
-                startprob_cdf
-                    .iter()
-                    .position(|&c| c > u)
-                    .unwrap_or(nc - 1)
+                startprob_cdf.iter().position(|&c| c > u).unwrap_or(nc - 1)
             }
         };
 
@@ -833,10 +791,7 @@ fn compute_posteriors_log(fwdlattice: &Array2<f64>, bwdlattice: &Array2<f64>) ->
 }
 
 /// Compute posteriors from scaling-space forward and backward lattices.
-fn compute_posteriors_scaling(
-    fwdlattice: &Array2<f64>,
-    bwdlattice: &Array2<f64>,
-) -> Array2<f64> {
+fn compute_posteriors_scaling(fwdlattice: &Array2<f64>, bwdlattice: &Array2<f64>) -> Array2<f64> {
     let mut posteriors = fwdlattice * bwdlattice;
     utils::normalize_rows(&mut posteriors);
     posteriors
